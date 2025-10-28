@@ -5,16 +5,16 @@ m_ProjectFiles:
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638971722678573457
-    m_Hash: 2405387192
+      ticks: 638972360529799486
+    m_Hash: 947626093
   m_LockFileStatus:
     m_FilePath: D:/Team5_GameLab_LoC/Packages/packages-lock.json
     m_PathExists: 1
     m_ContentTrackingEnabled: 1
     m_ModificationDate:
       serializedVersion: 2
-      ticks: 638971722715377980
-    m_Hash: 517873031
+      ticks: 638972360529944202
+    m_Hash: 28772972
 m_EmbeddedPackageManifests:
   m_ManifestsStatus: {}
 m_LocalPackages:
