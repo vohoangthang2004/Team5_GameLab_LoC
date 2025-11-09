@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -22,6 +23,10 @@ public class PlayerController : MonoBehaviour
     public float normalAttackDuration = 0.5f;
     public float abilityAttackDuration = 0.5f;
 
+    [Header("Fighter's Health")]
+    public int maxHealth = 100;
+    public int currentHealth;
+    public HealthBarScript healthBar;
     // Private variables
     private Rigidbody2D rb;
     private Vector2 movementDirection;
@@ -30,6 +35,11 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        currentHealth = maxHealth;
+        if (healthBar != null)
+        {
+            healthBar.SetMaxHealth(maxHealth);
+        }
         rb = GetComponent<Rigidbody2D>();
         // Get animator player
         if (playerAnimator == null)
@@ -69,12 +79,24 @@ public class PlayerController : MonoBehaviour
         {
             StartCoroutine(PerformNormalAttack());
         }
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            TakeDamage(20);
+        }
     }
 
+    public void TakeDamage(int damage)
+    {
+        currentHealth -= damage;
+        healthBar.SetHealth(currentHealth);
+    }
     void FixedUpdate()
     {
-        // Use Rigidbody2D for physics-based movement
-        rb.velocity = movementDirection * movementSpeed;
+        if (rb != null)
+        {
+            // Use Rigidbody2D for physics-based movement
+            rb.velocity = movementDirection * movementSpeed;
+        }
     }
 
     private IEnumerator PerformNormalAttack()

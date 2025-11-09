@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using UnityEngine;
 
-public class HealthBarScript : MonoBehaviour
+public class EnemyHealthBar : MonoBehaviour
 {
-    public Slider healthBarSlider;
+    [SerializeField] private Slider healthBarSlider;
 
     public void SetMaxHealth(int health)
     {

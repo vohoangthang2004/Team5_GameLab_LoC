@@ -10,6 +10,12 @@ public class SwordAttack : MonoBehaviour
     public float rotationSpeed = 720f;
     public float rotationAmount = 180f;
 
+    [Header("Damage Settings")]
+    public int normalAttackDamage = 10;
+    public int abilityAttackDamage = 20;
+    [Header("Attack Script Reference")]
+    public PlayerAttack playerAttack;
+
     private bool isAttacking = false;
     private float startAngle;
     private float endAngle;
@@ -23,15 +29,43 @@ public class SwordAttack : MonoBehaviour
             startAngle = sword.localEulerAngles.z;
             endAngle = startAngle + rotationAmount;
             currentRotation = startAngle;
+
+            // Try to find PlayerAttack if not assigned
+            if (playerAttack == null)
+            {
+                playerAttack = sword.GetComponentInChildren<PlayerAttack>();
+
+                if (playerAttack == null)
+                {
+                    Debug.LogError("PlayerAttack component not found! Please assign it in the Inspector.");
+                }
+            }
         }
     }
 
     void Update()
     {
-        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.E)) && useScriptRotation && !isAttacking)
+        if (Input.GetMouseButtonDown(0) && useScriptRotation && !isAttacking)
         {
             isAttacking = true;
             swingForward = true;
+
+            if(playerAttack != null)
+            {
+                playerAttack.SetDamage(normalAttackDamage);
+                playerAttack.StartAttack();
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.E) && useScriptRotation && !isAttacking)
+        {
+            isAttacking = true;
+            swingForward = true;
+
+            if (playerAttack != null)
+            {
+                playerAttack.SetDamage(abilityAttackDamage);
+                playerAttack.StartAttack();
+            }
         }
 
         // Continue rotating every frame while attacking
@@ -62,6 +96,12 @@ public class SwordAttack : MonoBehaviour
             {
                 currentRotation = startAngle;
                 isAttacking = false;
+
+                // Disable damage when attack ends
+                if (playerAttack != null)
+                {
+                    playerAttack.EndAttack();
+                }
             }
         }
 
