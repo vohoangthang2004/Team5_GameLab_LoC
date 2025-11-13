@@ -22,6 +22,9 @@ public class EnemyController : MonoBehaviour
     public float attackCooldown = 1.5f;
     public int attackDamage = 10;
 
+    [Header("Push")]
+    public float pushStunDuration = 0.5f;
+
     [Header("Animator")]
     public Animator enemyAnimator;
     
@@ -29,7 +32,10 @@ public class EnemyController : MonoBehaviour
     private Transform player;
     private Rigidbody2D rb;
     private bool canAttack = true;
+    private TankerController tankerController;
     private PlayerController playerController;
+    private bool isPushed = false;
+    private float pushEndTime = 0f;
 
     // Enemy states
     private enum EnemyState { Idle, Chase, Attack }
@@ -50,8 +56,14 @@ public class EnemyController : MonoBehaviour
             enemyAnimator = GetComponent<Animator>();
         }
 
-        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
+        GameObject tankerObj = GameObject.FindGameObjectWithTag("Tanker");
+        if (tankerObj != null)
+        {
+            player = tankerObj.transform;
+            tankerController = tankerObj.GetComponent<TankerController>();
+        }
 
+        GameObject playerObj = GameObject.FindGameObjectWithTag("Player");
         if (playerObj != null)
         {
             player = playerObj.transform;
@@ -62,6 +74,16 @@ public class EnemyController : MonoBehaviour
     void Update()
     {
         if(player == null || currentHealth <=0) return;
+
+        if (isPushed && Time.time >= pushEndTime)
+        {
+            isPushed = false;
+        }
+
+        if (isPushed)
+        {
+            return;
+        }
 
         float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
         //State machine Logic
@@ -96,7 +118,7 @@ public class EnemyController : MonoBehaviour
         if (enemyAnimator != null)
         {
             // If attacking, force Speed to 0 to play idle animation
-            if (currentState == EnemyState.Attack)
+            if (currentState == EnemyState.Attack || isPushed)
             {
                 enemyAnimator.SetFloat("Speed", 0f);
             }
@@ -161,6 +183,8 @@ public class EnemyController : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth -= damage;
+        Debug.Log($"{gameObject.name} took {damage} damage. Current health: {currentHealth}");
+
         if (healthBar != null)
         {
             healthBar.SetHealth(currentHealth);
@@ -171,7 +195,39 @@ public class EnemyController : MonoBehaviour
         }
     }
 
-    private IEnumerator PerformAttack()
+    public void GetPushed(Vector2 pushDirection, float pushForce)
+    {
+        if (rb != null && currentHealth > 0)
+        {
+            isPushed = true;
+
+            pushEndTime = Time.time + pushStunDuration;
+
+            rb.velocity = Vector2.zero;
+            rb.AddForce(pushDirection * pushForce, ForceMode2D.Impulse);
+            Debug.Log($"{gameObject.name} was pushed!");
+        }
+    }
+
+    public void TakeDamageAndPush(int damage, Vector2 pushDirection, float pushForce)
+    {
+        Debug.Log($"{gameObject.name} - TakeDamageAndPush called: damage={damage}, push={pushForce}");
+
+        // Apply damage FIRST
+        TakeDamage(damage);
+
+        // Then push if still alive (currentHealth is already updated from TakeDamage)
+        if (currentHealth > 0)
+        {
+            GetPushed(pushDirection, pushForce);
+        }
+        else
+        {
+            Debug.Log($"{gameObject.name} died from damage, no push applied");
+        }
+    }
+
+    IEnumerator PerformAttack()
     {
         canAttack = false;
 
